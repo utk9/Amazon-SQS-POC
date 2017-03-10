@@ -47,25 +47,26 @@ app.delete('/queue/:queueName', (req, res, next) => {
 
 	if (!queueName) next(new Error('No queue name given'));
 
-	const params = { QueueName: queueName };
 
-	sqs.deleteQueue(params).promise()
-		.then((data) => {
-			res.send(data);
-		})
-		.catch((err) => {
+	sqs.getQueueUrl({ QueueName: queueName }).promise()
+	    .then((data) => {
+	    	const params = { QueueUrl: data.QueueUrl };
+			sqs.deleteQueue(params).promise()
+				.then((data) => {
+					res.send(data);
+				})
+				.catch((err) => {
+					next(err);
+				});
+		}).catch((err) => {
 			next(err);
 		});
 });
 
 
 // create a new job
-app.post('/job', (req, res, next) => {
-	const pCurrentQueues = sqs.listQueues().promise();
-
-	pCurrentQueues.then((queues) => {
-
-	});
+app.post('/message', (req, res, next) => {
+	
 
 });
 
