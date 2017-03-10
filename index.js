@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 
 const express = require('express');
+const bodyParser = require('body-parser');
 const AWS = require('aws-sdk');
 
 AWS.config.loadFromPath('./aws-sqs-config.json');
@@ -9,9 +10,8 @@ AWS.config.setPromisesDependency(Promise);
 const app = express();
 const sqs = new AWS.SQS();
 
-app.get('/jobs', (req, res, next) => {
-
-});
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // list all the queues
 app.get('/queues', (req, res, next) => {
@@ -24,11 +24,43 @@ app.get('/queues', (req, res, next) => {
 		});
 });
 
-app.post('/job', (req, res, next) => {
+// create a new queue
+app.post('/queue', (req, res, next) => {
+	const { queueName } = req.body;
 
+	if (!queueName) next(new Error('No queue name given'));
+
+	const params = { QueueName: queueName };
+
+	sqs.createQueue(params).promise()
+		.then((data) => {
+			res.send(data.QueueUrl);
+		})
+		.catch((err) => {
+			next(err);
+		});
 });
 
-app.post('/queue', (req, res, next) => {
+// delete a queue
+app.delete('/queue/:queueName', (req, res, next) => {
+	const { queueName } = req.params;
+
+	if (!queueName) next(new Error('No queue name given'));
+
+	const params = { QueueName: queueName };
+
+	sqs.deleteQueue(params).promise()
+		.then((data) => {
+			res.send(data);
+		})
+		.catch((err) => {
+			next(err);
+		});
+});
+
+
+// create a new job
+app.post('/job', (req, res, next) => {
 	const pCurrentQueues = sqs.listQueues().promise();
 
 	pCurrentQueues.then((queues) => {
@@ -40,6 +72,10 @@ app.post('/queue', (req, res, next) => {
 // if at this point, none of the previous handlers/routes matched, must be a 404 
 app.use((req, res, next) => {
 	res.sendStatus(404);
+});
+
+app.use((err, req, res, next) => {
+	res.status(500).send(err.message);
 });
 
 app.listen(3000, () => {
