@@ -13,6 +13,8 @@ const sqs = new AWS.SQS();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+const QueueUrl = 'https://sqs.us-west-2.amazonaws.com/468761638778/test-queue';
+
 // list all the queues
 app.get('/queues', (req, res, next) => {
 	sqs.listQueues().promise()
@@ -64,9 +66,37 @@ app.delete('/queue/:queueName', (req, res, next) => {
 });
 
 
-// create a new job
+// create a new job, only support sending number and string data types for now
 app.post('/message', (req, res, next) => {
 	
+	if (!req.body) return next(new Error('No body given'));
+
+	const { message, data } = req.body;
+
+	const MessageAttributes = {};
+	for (let key in data) {
+		const DataType = typeof data[key] === 'number' ? 'Number' : 'String' // case sensitive
+		MessageAttributes[key] = {
+			DataType,
+			StringValue: data[key].toString(),
+		}
+	}
+
+	const params = {
+		QueueUrl,
+		MessageBody: message,
+		MessageAttributes,
+	}
+
+	console.log(params);
+	
+	sqs.sendMessage(params).promise()
+		.then((data) => {
+			res.send(data);
+		})
+		.catch((err) => {
+			next(err);
+		});
 
 });
 
