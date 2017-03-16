@@ -1,0 +1,14 @@
+{
+  "name": "lambda",
+  "version": "1.0.0",
+  "description": "Deployment package for lambda function for sending emails",
+  "main": "send-email-lambda.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Utkarsh Lamba",
+  "license": "ISC",
+  "dependencies": {
+    "nodemailer": "^3.1.7"
+  }
+}
