@@ -7,6 +7,8 @@ AWS.config.setPromisesDependency(Promise);
 
 const sqs = new AWS.SQS();
 
+const lambda = new AWS.Lambda();
+
 const QueueUrl = 'https://sqs.us-west-2.amazonaws.com/468761638778/test-queue';
 
 class Log {
@@ -29,8 +31,11 @@ const params = {
 }
 
 function handleMessage(message) {
-	log.info(message);
-	return Promise.resolve();
+	const params = {
+		FunctionName: 'sendEmail',
+		InvocationType: 'RequestResponse',
+	}
+	return lambda.invoke(params).promise();
 }
 
 function listen () {
@@ -40,7 +45,8 @@ function listen () {
 			if (data.Messages) {			
 				data.Messages.forEach((message) => {
 					handleMessage(message)
-						.then(() => {
+						.then((result) => {
+							log.info(result);
 							// message successfully processed, remove from queue
 							const deleteParams = {
 								QueueUrl,
