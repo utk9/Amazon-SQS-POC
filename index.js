@@ -100,13 +100,22 @@ app.post('/message', (req, res, next) => {
 
 });
 
+// temporary utility endpoint, meant to test the lambda function 
+app.get('/sendEmail', (req, res) => {
+	const sendEmail = require('./lambda/send-email-lambda');
+	sendEmail(null, null, (err, result) => {
+		if (err) { return res.send(err); }
+		res.send(result);
+	});
+});
+
 // if at this point, none of the previous handlers/routes matched, must be a 404 
 app.use((req, res, next) => {
 	res.sendStatus(404);
 });
 
 app.use((err, req, res, next) => {
-	res.status(500).send(err.message);
+	res.status(500).send(err.stack);
 });
 
 app.listen(3000, () => {
