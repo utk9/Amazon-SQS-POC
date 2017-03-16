@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 
 const { user, pass } = require('./config/auth').gmail;
 
-module.exports = (event, context, callback) => {
+exports.handler = (event, context, callback) => {
 
 	const transporter = nodemailer.createTransport({
 		service: 'gmail',
@@ -12,12 +12,14 @@ module.exports = (event, context, callback) => {
 		}
 	});
 
+	// const  { to } = event;
+
 	const mailOptions = {
 		from: 'dprevrev@gmail.com',
 		to: 'dprevrev@gmail.com',
 		subject: 'Test email, sent using AWS lambda and queued using SQS, let the disruption begin',
 		text: 'Hello World',
-		html: '<h3>Heading</h3>',
+		html: '<h3>Greetings, good sir/ma\'am.</h3>',
 	}
 
 	transporter.sendMail(mailOptions, (err, info) => {
