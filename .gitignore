@@ -2,3 +2,4 @@ node_modules/
 aws-sqs-config.json
 lambda/config/auth.js
 npm-debug.log
+.DS_Store
